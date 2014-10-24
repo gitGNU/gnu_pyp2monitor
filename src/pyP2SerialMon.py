@@ -20,7 +20,7 @@
 #
 
 #Python libs import
-import serial
+import serial, signal, time, sys
 import time
 
 #pyP2Monitor import
@@ -31,6 +31,17 @@ from p2proto import *
 import p2msg
 from p2msg import *
 import utils
+
+com = None
+
+##Gentle exit to manage sigint
+def gentle_exit(signal, frame):
+	print('Ctrl+C pressed... Exiting.')
+	#Serial port closing
+	com.stop()
+	sys.exit(0)
+        
+signal.signal(signal.SIGINT, gentle_exit)
 
 #Argument parse
 args = utils.argParse('monitor')
@@ -57,7 +68,6 @@ com = P2Furn(args['port'])
 
 #Running wanted stages
 for stage in args['stage']:
-	print 'stage : '+stage
 	if stage == 'all':
 		com.runAuth(P2Furn.userId(args['user']))
 		com.runInit()

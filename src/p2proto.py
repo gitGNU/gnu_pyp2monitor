@@ -209,7 +209,6 @@ class P2Furn:
 			try:
 				inMsg = self.com.read()
 			except P2ComError as e:
-				print e
 				if e.getErrno() == 9:
 					raise e
 					
