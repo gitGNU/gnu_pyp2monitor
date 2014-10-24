@@ -1,0 +1,144 @@
+pyP2Monitor
+###########
+
+	https://savannah.nongnu.org/projects/pyp2monitor/
+
+pyP2Monitor is an attempt to communicate with a P2 froeling furnace using its serial port. It allows you to gather some data from the furnace and store them in an sqlite database for further analysis.
+It allow you via a simple query syntax to generate charts using gnuplot.
+
+For the moment only few part of the furnace's protocol is handled :
+
+	- Connection
+		. Initialisation
+		. keep-alive
+	- Data query
+
+Some of the data receive from the furnace are decoded that allow you to monitor your heating activity.
+
+Getting the sources :
+---------------------
+
+	git clone git://git.savannah.nongnu.org/pyp2monitor.git
+
+Dependencies :
+--------------
+	python-2.7.3
+	python-serial (module for serial port access)
+	python-pysqlite2 (Sqlite3 interface)
+	python-argparse (command line argument parsing)
+
+	For pyP2DataReader :
+		gnuplot ( http://gnuplot.info/ ) gnuplot-x11
+
+TODO:
+-----
+
+	* Little changes can be made to add the checksum failed storage into the sqlite db (same for session storage as it was for mysql)
+	* Two's complement on a data
+	
+	* Add files output (done for csv)
+	* Catch crl+c in pyP2SerialMon
+
+Howto :
+-------
+
+* Furnace monitor : ./run_mon.sh
+
+
+* Data reader : ./run_read.sh
+
+	examples :
+		./run_read.sh -d ./p2.db -q 'b=-26h,e=-24h,f=diff,n=5' -q 'b=-26h,e=-24h,f=diff,n=7'
+		./run_read.sh -d ./p2.db -q 'b=-26h,e=-24h,f=diff,n=5' -q 'b=-26h,e=-24h,f=diff,n=7' -q 'b=-30h,e=-28h,f=diff,n=7' -q 'b=-30h,e=-28h,f=diff,n=5'
+
+* Documentation generation :
+	Go into the pyP2Monitor directory and run : doxygen Doxygen.conf
+
+* Cleaning the directory :
+	Running ./clean.sh remove the doc folder and src/*.pyc
+
+* Csv database dump :
+	./run_read.sh -d ./p2.db --csvdump /tmp/db_dump.csv
+
+
+Notes :
+-------
+
+ * Data query syntax : A query is a list of couple field=value. List of allowed fields :
+ 		- b|begin=begin_date (special value "now" and "first")
+		- e|end=end_date (special value "now" and "first")
+		- t|time=numeric time length with unit suffix (s seconds, m minutes, h hours, d days)
+		- d|data=data name
+		- n|num=data number id
+		- a|axes=axes identifier ( of the form : idGraphic:axe. example 2:y ) ( !!! NOT IMPLEMENTED !!! )
+		- s|style=gnuplot graphic style (line, dots, pulse...)
+		- sc|scale=graphic scale as a float value
+		- a|add=integer to add at the graphics value
+		- c|color=graphic color (with color name or in hex notation : #rrggbb)
+		- l|label=graphic label
+	example of query :
+		"b=now;t=-10h;d=date;a=1:x" "b=now;t=-10h;n=10;a=1:y,sc=0.5" for a graphic from the last 10 hours with data[10]
+
+	when differents time ranges are specified for data the programm create a proper date field in the right unit
+
+ * Log size estimation :
+	If we log every bytes of a data frame, we have to log 106 Bytes + 32 bits (4Bytes) for the timestamp and a log every second. The number of logged data is 3600 * 24 * 365, and the size for a year of logs is (110 * 3600 * 24 * 365) ~ 3GB
+	Here is a little array with the estimated size of logs in function of the log time in seconds
+
+	+---------------------------------------------------------------+
+	|logtime	|   1s  |   2s  |   5s  |  10s  |  30s  |  1min |
+	|size in a year	|  3GB  | 1.5GB | 660MB | 330MB | 110MB |  30MB |
+	|size in a month| 275MB | 240MB |  55MB |  27MB | 10MB  |  5MB  |
+	|size in a day	|  9MB  |  5MB  |  2MB  |  1MB  | 300KB | 150KB |
+	+---------------------------------------------------------------+
+
+ * We do not receive a timestamp from the furnace but a date with every field encoded on 1 Byte in this order : sec|min|hour|day|month|day_of_week|year
+
+ * Datas retrived from the furnace can be stored in ascii files or in sqlite3 db
+
+ * Datas are stored in a SQLite3 db for simplicity, compatibility and portability.
+ 	1 Table store timestamp and data. Datas are stored into binary strings.
+
+ * File format is [date data] with date in format : 2013/10/27_13:37:42 and data represented as a big hexadecimal number in upper case (here data is the full frame with header, size, data and checksum)
+
+ * OBSOLETE : MYSQL Database data storage :
+ 	1 Table with two columns : timestamp and data. len(data) == 0 mean invalid timestamp. data are only the data part of the frame. We stored only valid data frame (or with invalid checksum)
+	1 Table storing reading session with and identifier, a begin and end date, and a type (reading programm, data file, or unknow : ENUM('prog', 'file', 'unknow') )
+
+	
+
+ * Instead of sleeping after a write, we've set a timeout on the read. The experience show that once a frame is received we can send a frame directly.
+
+* About initialisation stream
+	Assuming that stream are in the form : [id] [label]
+        MA : id = 4 + label
+        MB : id = 4 + label
+        MC : 8octets datas
+        MD : 1 octet char ascii ( A|I|Z|B|P ) 6 octets d'id ? + label
+        ME : 17octets data
+        MF : 2octets id + label ?
+        ML : 10 octets id + label ?
+        MM : 4octets id + label
+        MT : 1octet id + label
+        MW : 2 octets id + label
+
+* Notes about unknown and not processed stream :
+ 	RT : 5254 : Sans doute une demande de retransmission... exemple de trame reçues puis boucle dessus pendant l'init :
+		5254170000A74D45110054200000010000240022004E005303840286
+		5254170100A84D45110054200000010000240022004E005303840286
+		5254170100A84D45110054200000010000240022004E005303840286
+		5254170100A84D45110054200000010000240022004E005303840286
+	Ra : 5261 : Bug après l'auth... exemple : 
+		Send : '52610300FFF902AE' //Premier envoit
+		Received frame :  4D45110054200000010000240022004E005303840286
+		Sending : '4D4101010090'
+		Received frame :  5261170100B54D45110054200000010000240022004E005303840286
+		Sending : '5261010100B5'
+		Received frame :  5261170100B54D45110054200000010000240022004E005303840286
+		Sending : '5261010100B5'
+		Received frame :  5261170100B54D45110054200000010000240022004E005303840286
+		Sending : '5261010100B5'
+		Received frame :  5261170100B54D45110054200000010000240022004E005303840286
+		
+		Visiblement envoyé en cas d'authentification superflu...
+

@@ -1,0 +1,21 @@
+12/25/13 : New version v0.1
+12/25/13 : New directory tree. logs is a temporary log directory, src store the sources. Use run.sh to run the programm.
+12/27/13 : Added SQLite3 db data storage
+12/28/13 : Added a first version of data formating (json output)
+12/28/13 : Switch to version 0.3
+01/06/14 : Added command line argument parse
+01/06/14 : Added a new logging system
+01/06/14 : Creating pyP2DataRead
+01/06/14 : Adding argument parsing to pyP2DataRead
+01/06/14 : Implementing GnuPlot support for pyP2DataRead
+01/07/14 : Solving a bug about GnuPlot output
+01/07/14 : Adding scale and correction to pyP2DataRead's query
+01/07/14 : Solving a bug about graphics color
+01/07/14 : Removing the gnuplot-python lib for using pipe and temporary files
+01/07/14 : Now we can specify a size in pixel for image output
+01/07/14 : At version 0.3.3 BETA
+01/10/14 : Bug fixing
+01/13/14 : At version 0.3.4 BETA
+01/13/14 : Format comments to be doxygen compliant
+23/10/14 : Add csv database dump fonctionnality
+23/10/14 : Accepted on savannah.nongnu.org https://savannah.nongnu.org/projects/pyp2monitor/
