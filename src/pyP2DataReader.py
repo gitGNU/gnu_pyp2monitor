@@ -54,11 +54,6 @@ if 'field_list' in args and args['field_list']:
 print args
 if args['database']:
 	if args['query'] != None:
-		"""
-		gp = pipes.Template()
-		gp.append('gnuplot --persist', '--')
-		g = gp.open('/tmp/pyp2dataread.pipe', 'w')
-		"""
 		g = tempfile.NamedTemporaryFile('w+',-1,'pyP2gnuplotcommand')
 		
 		datas = p2data.P2Datas(args['database'],args['query'],args['separator'])
@@ -69,6 +64,7 @@ if args['database']:
 		
 		gbuff = ""
 		
+		#gnuplot command preparation
 		if not (args['format'] == None or args['format'] == 'gnuplot'):
 			if args['format'] == 'png':
 				gbuff+='set terminal png'
@@ -92,7 +88,7 @@ if args['database']:
 			gbuff+='set format x "'+outFmt+'"\n'
 			gbuff+='set timefmt "'+inFmt+'"\n'
 			
-		
+		#adding the plot command (it loads data in a file also)
 		gbuff += datas.getPlotCommand()
 		logger.debug("Writing gnuplot options : "+ gbuff)
 		g.write(gbuff)

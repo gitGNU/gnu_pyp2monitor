@@ -163,7 +163,6 @@ class P2Furn:
 		
 			try:
 				msg = self.com.read()
-				#msg.dumpData()
 				retry = False
 				logger.debug("Answer received : "+msg.getStr())
 			except P2ComError as e:
@@ -209,8 +208,6 @@ class P2Furn:
 			
 			try:
 				inMsg = self.com.read()
-				#inMsg.dumpData()
-				#print "MSGDUMP: "+inMsg.dispInitMsg()
 			except P2ComError as e:
 				print e
 				if e.getErrno() == 9:
@@ -361,7 +358,6 @@ class P2Furn:
 					outMsg.prepare(headers["m2"])
 					m1sending = True
 			#Send the prepared message
-			#time.sleep(0.5)
 			self.com.sendMsg(outMsg)
 
 			#And read the reply
@@ -403,6 +399,7 @@ class P2Furn:
 					curDate = datetime.datetime(msgData[0]+2000,msgData[2],msgData[3],msgData[4],msgData[5],msgData[6])
 
 			logger.debug("Received message : "+inMsg.getStr())
+			#sleeping as asked
 			time.sleep(waitdata)
 		pass
 		

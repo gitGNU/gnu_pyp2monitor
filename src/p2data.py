@@ -263,7 +263,6 @@ class P2Datas:
 				logger.warning('Data as not the waited length ('+str(len(dataList))+' \''+data[1]+'\'')
 			else:
 				dataList = data2List(data[0], dataList )
-				#print data[0]
 				content.append([data[0],dataList])
 			
 		#fill queries
@@ -315,11 +314,6 @@ class P2Datas:
 		tmpfd = []
 		for i in range(len(self.queries)):
 			self.tmpfile.append(tempfile.NamedTemporaryFile('w+b',-1,'pyP2gnuplotdatas'))
-			"""
-			fname = '/tmp/pyp2monitor'+str(int(time.time() * 10000000))
-			self.tmpfile.append(fname)
-			tmpfd.append(open(fname, "w+"))
-			"""
 		tmpfd=self.tmpfile
 		
 		#Creating a dataSet foreach query
@@ -360,8 +354,6 @@ class P2Datas:
 					tmpfd[i].write(time+' '+str(float(val)*float(scale)+float(add))+'\n')
 					tmpfd[i].flush()
 					
-		#for i in range(len(self.queries)):
-		#	tmpfd[i].close()
 		pass
 	
 	##Return the GnuPlot's plot command with the good arguments
@@ -384,9 +376,7 @@ class P2Datas:
 			if self.tmpfile == None:
 				self.getPlotData()
 			
-			#res += '"'+self.tmpfile[i]+'" using 1:2 '	
 			res += '"'+self.tmpfile[i].name+'" using 1:2 '
-			#res += '"'+self.tmpfile[i].name+'" using 1:'+str(i+2)+' '
 			
 			
 			if 'label' in args:

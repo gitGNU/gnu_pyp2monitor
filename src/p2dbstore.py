@@ -44,8 +44,6 @@ class P2DbStore:
 		self.c.execute('create table if not exists p2data (date integer, data collate binary)')
 		self.conn.commit()
 		
-		#logger.warn('Database file \''+filename+'\'do not exist, creating it')
-		
 		pass
 
 	##Insert datas into database
