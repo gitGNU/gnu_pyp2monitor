@@ -31,7 +31,7 @@ import logging
 import tempfile
 
 
-import os, string, tempfile, types, sys
+import os, string, tempfile, types, sys, time
 
 import p2msg
 import p2dbstore
@@ -305,15 +305,22 @@ class P2Datas:
 	#
 	# Use handled query to create and populate GnuPlot's temporary files.
 	def getPlotData(self):
-
+		
 		if self.tmpfile != None:
 			for t in self.tmpfile:
 				t.close()
 			self.tmpfile = None
 		
 		self.tmpfile = []
+		tmpfd = []
 		for i in range(len(self.queries)):
 			self.tmpfile.append(tempfile.NamedTemporaryFile('w+b',-1,'pyP2gnuplotdatas'))
+			"""
+			fname = '/tmp/pyp2monitor'+str(int(time.time() * 10000000))
+			self.tmpfile.append(fname)
+			tmpfd.append(open(fname, "w+"))
+			"""
+		tmpfd=self.tmpfile
 		
 		#Creating a dataSet foreach query
 		
@@ -350,8 +357,11 @@ class P2Datas:
 				
 				
 				if val is not False:
-					self.tmpfile[i].write(time+' '+str(float(val)*float(scale)+float(add))+'\n')
-					self.tmpfile[i].flush()	
+					tmpfd[i].write(time+' '+str(float(val)*float(scale)+float(add))+'\n')
+					tmpfd[i].flush()
+					
+		#for i in range(len(self.queries)):
+		#	tmpfd[i].close()
 		pass
 	
 	##Return the GnuPlot's plot command with the good arguments
@@ -373,7 +383,8 @@ class P2Datas:
 			
 			if self.tmpfile == None:
 				self.getPlotData()
-				
+			
+			#res += '"'+self.tmpfile[i]+'" using 1:2 '	
 			res += '"'+self.tmpfile[i].name+'" using 1:2 '
 			#res += '"'+self.tmpfile[i].name+'" using 1:'+str(i+2)+' '
 			
@@ -432,11 +443,6 @@ class P2Datas:
 		
 		
 		return (inFmt,outFmt)
-	
-	##P2Datas destructor
-	def __del__(self):
-		for t in self.tmpfile:
-			t.close()
 		
 
 ##Take data and return a well formated integer array
@@ -482,8 +488,8 @@ def colNames():
 	res = []
 	
 	res.append("Date et heure")
+	res.append("a")
 	res.append("Etat")
-	res.append("b")
 	res.append("c")
 	res.append("d")
 	res.append("Temp chaudiere")

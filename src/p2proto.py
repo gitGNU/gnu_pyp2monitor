@@ -92,6 +92,24 @@ class P2Furn:
 
 		pass
 	
+	##Return user hex value used to auth, given a user name
+	#
+	#@param user the user name
+	#
+	#@return An hex string representing the user id
+	@staticmethod
+	def userId(user):
+		res = P2Furn.USER_NORMAL
+
+		if user == 'service':
+			res = P2Furn.USER_SERVICE
+		elif user == 'normal_alt':
+			res = P2Furn.USER_NORMAL_ALT
+		elif user == 'plumber':
+			res = P2Furn.USER_PLUMBER
+
+		return res
+	
 	##Restart the serial port
 	def restartSerialPort(self):
 		self.com.close()
@@ -138,7 +156,7 @@ class P2Furn:
 		"""	
 			Sending user Id
 		"""
-		retry = False
+		retry = True
 		while retry:
 			logger.debug("Sending user Id, waiting for reply.")
 			self.com.write(user)
@@ -294,7 +312,7 @@ class P2Furn:
 	# @param dateFromP2 is True when we want the furnace date and time, if false we take the date and time from the computer
 	#
 	# @exception TypeError On invalid type for parameter storage
-	def readData(self, storage=[("sqlite", "p2.db")], dateFromP2 = False):
+	def readData(self, waitdata = 0.5, storage=[("sqlite", "p2.db")], dateFromP2 = False):
 		
 		logger.info("Entering data exchange mode")
 		
@@ -385,6 +403,7 @@ class P2Furn:
 					curDate = datetime.datetime(msgData[0]+2000,msgData[2],msgData[3],msgData[4],msgData[5],msgData[6])
 
 			logger.debug("Received message : "+inMsg.getStr())
+			time.sleep(waitdata)
 		pass
 		
 	##Close the serial port and reset stage lag

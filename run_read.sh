@@ -1,3 +1,5 @@
 #!/bin/bash
 
-python src/pyP2DataReader.py $*
+src_path="$(dirname $0)/src"
+
+python ${src_path}/pyP2DataReader.py $*

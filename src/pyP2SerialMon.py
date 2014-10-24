@@ -38,6 +38,8 @@ args = utils.argParse('monitor')
 #Init output (logging and verbosity)
 utils.initLogging(args['verbosity'], args['log_file'], args['log_level'], args['log_num'], args['log_size'])
 
+logger = utils.getLogger()
+
 #Store all the data's storage method
 storage = []
 if args['database'] != None:
@@ -57,15 +59,15 @@ com = P2Furn(args['port'])
 for stage in args['stage']:
 	print 'stage : '+stage
 	if stage == 'all':
-		com.runAuth(args['user'])
+		com.runAuth(P2Furn.userId(args['user']))
 		com.runInit()
-		com.readData(storage)
+		com.readData(float(args['data_wait']),storage)
 	elif stage == 'auth':
 		com.runAuth(args['user'])
 	elif stage == 'init':
 		com.runInit()
 	elif stage == 'data':
-		com.readData(storage)
+		com.readData(float(args['data_wait']),storage)
 
 #Serial port closing
 com.stop()

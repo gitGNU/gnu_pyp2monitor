@@ -107,8 +107,10 @@ class P2Com:
 		# This small tiemout is used as time between each read retry
 		self.timeout = 0.01
 		##Read fail timeout
-		self.failTimeout = 5
+		self.failTimeout = 10
+
 		##The serial port object
+		#self.ser = serial.Serial(portFile,9600,serial.EIGHTBITS,serial.PARITY_NONE,serial.STOPBITS_ONE,self.timeout,)
 		self.ser = serial.Serial(portFile,9600,serial.EIGHTBITS,serial.PARITY_NONE,serial.STOPBITS_ONE,self.timeout,)
 
 		##The last char of a sended frame "\r"

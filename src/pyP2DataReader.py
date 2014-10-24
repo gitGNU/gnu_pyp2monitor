@@ -19,8 +19,9 @@
 #        along with pyP2Monitor.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import sys
+import sys, os
 import signal #Portability problem ???
+import tempfile
 
 import pipes
 
@@ -35,6 +36,8 @@ args = utils.argParse('reader')
 
 #Init output (logging and verbosity)
 utils.initLogging(args['verbosity'])
+
+logger = utils.getLogger()
 
 
 if args['csvdump'] != None and args['database']:
@@ -51,9 +54,12 @@ if 'field_list' in args and args['field_list']:
 print args
 if args['database']:
 	if args['query'] != None:
+		"""
 		gp = pipes.Template()
 		gp.append('gnuplot --persist', '--')
 		g = gp.open('/tmp/pyp2dataread.pipe', 'w')
+		"""
+		g = tempfile.NamedTemporaryFile('w+',-1,'pyP2gnuplotcommand')
 		
 		datas = p2data.P2Datas(args['database'],args['query'],args['separator'])
 		
@@ -61,32 +67,38 @@ if args['database']:
 		
 		rep = datas.getDateTimeFormats()
 		
+		gbuff = ""
 		
 		if not (args['format'] == None or args['format'] == 'gnuplot'):
 			if args['format'] == 'png':
-				g.write('set terminal png')
+				gbuff+='set terminal png'
 			elif args['format'] == 'svg':
-				g.write('set terminal svg')
+				gbuff+='set terminal svg'
 			elif args['format'] == 'jpg':
-				g.write('set terminal jpg')
+				gbuff+='set terminal jpg'
 			if args['resolution'] != None:
-				g.write(' size '+args['resolution'])
-			g.write('\n')
-			g.write('set output "'+args['output']+'"\n')
+				gbuff+=' size '+args['resolution']
+			gbuff+='\n'
+			gbuff+='set output "'+args['output']+'"\n'
 		else:
-			g.write('set terminal wxt\n')
+			gbuff+='set terminal wxt\n'
 		
 		if args['title'] != None:
-			g.write('set title '+args['title']+'\n')
+			gbuff+='set title '+args['title']+'\n'
 		if not rep is False:
 			(inFmt,outFmt) = rep
-			g.write('set xdata time\n')
-			g.write('set timefmt "'+inFmt+'"\n')
-			g.write('set format x "'+outFmt+'"\n')
-			g.write('set timefmt "'+inFmt+'"\n')
+			gbuff+='set xdata time\n'
+			gbuff+='set timefmt "'+inFmt+'"\n'
+			gbuff+='set format x "'+outFmt+'"\n'
+			gbuff+='set timefmt "'+inFmt+'"\n'
+			
 		
-		g.write(datas.getPlotCommand())
+		gbuff += datas.getPlotCommand()
+		logger.debug("Writing gnuplot options : "+ gbuff)
+		g.write(gbuff)
 		g.flush()
+		
+		os.system('gnuplot --persist "'+g.name+'"')
 		
 		if args['format'] == 'gnuplot':
 			raw_input('Please press return to continue...\n')

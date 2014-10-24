@@ -126,7 +126,7 @@ def monitorArgParse(usage = False):
 						help='Tell the programm to store data in FILENAME file as \'date:[invalid]:hex_string\' (it is the only storage keeping invalid messages)')
 	data_arg.add_argument('-P', '--print-data', action='store_const', const=True, default=False,
 							help='Print received data on stdout')
-	data_arg.add_argument('-w', '--data-wait', action='store', type=int, default=1, metavar='SECS',
+	data_arg.add_argument('-w', '--data-wait', action='store', type=float, default=1, metavar='SECS',
 						help='Time to wait between two data request')
 						
 	run_arg.add_argument('-t', '--max-time', action='store', type=int, metavar='SECS',
@@ -265,7 +265,7 @@ def initLogging(verbosity, log_file = None,log_level = None,log_num = None,log_s
 	if log_file != None and log_num != None and log_size != None:
 		fl = logging.handlers.RotatingFileHandler(log_file, mode='a', maxBytes=log_size, backupCount=log_num, delay=True)
 		
-		lvl = getLogLevelConst(log_lvl)
+		lvl = getLogLevelConst(log_level)
 		if lvl < 1000:
 			fl.setLevel(lvl)
 			logger.addHandler(fl)
