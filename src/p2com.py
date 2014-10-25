@@ -63,12 +63,11 @@ class P2ComError(Exception):
 	##Error code for checksum error
 	ERR_CHKSUM	= 2
 
+	##Instanciate a P2ComError object
+	#
+	# @param errno The error code
+	# @param data The data received on serial port	
 	def __init__(self,errno, data = None):
-		"""Instanciate a P2ComError object
-		
-		@param errno The error code
-		@param data The data received on serial port
-		"""
 		
 		##The associated error code
 		self.errno = errno

@@ -19,3 +19,5 @@
 01/13/14 : Format comments to be doxygen compliant
 23/10/14 : Add csv database dump fonctionnality
 23/10/14 : Accepted on savannah.nongnu.org https://savannah.nongnu.org/projects/pyp2monitor/
+24/10/14 : Several bugfixes thanks to new test with a furnace
+25/10/14 : Added daemonise capabilities to pyP2SerialMon.py using the new options -B|--background -K|--stop -i|--pidfile
