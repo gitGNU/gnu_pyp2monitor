@@ -20,7 +20,7 @@
 #
 
 #Python libs import
-import serial, signal, time, sys
+import serial, signal, time, sys, os
 import time
 
 #pyP2Monitor import
@@ -33,15 +33,35 @@ from p2msg import *
 import utils
 
 com = None
+pidfile= ""
 
 ##Gentle exit to manage sigint
 def gentle_exit(signal, frame):
-	print('Ctrl+C pressed... Exiting.')
+	logger.critical("signal caught, exiting")
 	#Serial port closing
 	com.stop()
+	os.unlink(pidfile)
 	sys.exit(0)
-        
+
+##"Fork" into background
+def start_daemon(pidfile):
+	arg = []
+	for e in sys.argv:
+		if e != '-B':	#Deleting background option
+			arg.append(e)
+	logger.debug("Starting background process...")
+	pid = os.spawnv(os.P_NOWAIT,arg[0], arg)
+	fdpid = open(pidfile,"w+")
+	fdpid.write(str(pid))
+	fdpid.close()
+	
+	print "Background process started. Pid = "+str(pid)
+	
+	return pid
+
+
 signal.signal(signal.SIGINT, gentle_exit)
+signal.signal(10, gentle_exit)
 
 #Argument parse
 args = utils.argParse('monitor')
@@ -50,6 +70,18 @@ args = utils.argParse('monitor')
 utils.initLogging(args['verbosity'], args['log_file'], args['log_level'], args['log_num'], args['log_size'])
 
 logger = utils.getLogger()
+
+#start background process to start a daemon
+pidfile = args['pidfile']
+if args['background']:
+	exit(start_daemon(pidfile))
+elif args['stop']: #or kill an existing daemon
+	pidfd = open(pidfile,"r")
+	pid = int(pidfd.read())
+	os.kill(pid, 10)
+	print "Sig 10 send to process",pid
+	exit(0)
+	
 
 #Store all the data's storage method
 storage = []
@@ -68,16 +100,60 @@ com = P2Furn(args['port'])
 
 #Running wanted stages
 for stage in args['stage']:
+	maxretry = 3
+	
+	stages = 0	
+
 	if stage == 'all':
-		com.runAuth(P2Furn.userId(args['user']))
-		com.runInit()
-		com.readData(float(args['data_wait']),storage)
+		stages = 7
 	elif stage == 'auth':
-		com.runAuth(args['user'])
+		stages = 1
 	elif stage == 'init':
-		com.runInit()
+		stages = 2
 	elif stage == 'data':
-		com.readData(float(args['data_wait']),storage)
+		stages = 3
+		
+	if stages&1:
+		again = 0
+                while again<maxretry:
+                        try:
+                                com.runAuth(P2Furn.userId(args['user']))
+                                again = maxretry+1
+                        except p2com.P2ComError as e:
+				if again < maxretry:
+                                        logger.error("Authentication stage failed : "+str(e))
+                                        again+=1
+                                else:
+                                        logger.critical("Authentication stage failed again after "+str(maxretry)+" attempts")
+                                        raise e
+
+	if stages&2:
+		again = 0
+                while again<maxretry:
+                        try:
+                                com.runInit()
+                                again = maxretry+1
+                        except p2com.P2ComError as e:
+				if again < maxretry:
+                                	logger.error("Initialisation stage failed : "+str(e))
+                                	again+=1
+				else:
+                                        logger.critical("Initialisation stage failed again after "+str(maxretry)+" attempts")
+                                        raise e
+
+	if stages&3:
+		again = 0
+                while again<maxretry:
+                        try:
+                                com.readData(float(args['data_wait']),storage)
+                                again = maxretry+1
+                        except p2com.P2ComError as e:
+				if again < maxretry:
+                                        logger.error("DataReading stage failed : "+str(e))
+                                        again+=1
+                                else:  
+                                        logger.critical("DataReading stage failed again after "+str(maxretry)+" attempts")
+                                        raise e
 
 #Serial port closing
 com.stop()

@@ -106,6 +106,8 @@ def monitorArgParse(usage = False):
 	data_arg = parser.add_argument_group('Data processing options')
 
 	run_arg = parser.add_argument_group('Runtime options')
+	
+	daemon_arg = parser.add_argument_group('Daemon options')
 
 	log_arg = parser.add_argument_group('Logging options')
 
@@ -133,12 +135,17 @@ def monitorArgParse(usage = False):
 						help='Tell the programm to stop after SECS seconds')
 	run_arg.add_argument('-n', '--max-data', action='store', type=int, metavar='INTEGER',
 						help='Tell the programm to stop after receiving NUMBER valid datas')
-	run_arg.add_argument('-B', '--background', action='store_const', const=True, default=False,
-						help='Tell the programm to run in background (not implemented yet)')
 	run_arg.add_argument('--stage', action='append', choices=['auth', 'init', 'data', 'all'], default=None,
 						help='Indicate wich stage in wich order to run (for example "--stage data init" while run the exchange stage before the init stage)')
 	run_arg.add_argument('-u', '--user', choices=['plumber', 'normal', 'normal2', 'service'], default='service',
 						help='Set the user used to authenticate on the furnace')
+
+	daemon_arg.add_argument('-B', '--background', action='store_const', const=True, default=False,
+						help='Tell the programm to run in background (not implemented yet)')
+	daemon_arg.add_argument('-K', '--stop', action='store_const', const=True, default=False,
+						help='Try to kill a pyP2SerialMonitor in background')
+	daemon_arg.add_argument('-i', '--pidfile', action='store', type=str, default="/tmp/pyP2SerialMon.pid", metavar='PIDFILE',
+						help='Pidfile name (used with -B or -K)')
 
 
 	log_arg.add_argument('--verbosity', action='store', choices=[ 'critical', 'error', 'warn', 'info', 'debug', 'silent'], default='error',
@@ -290,7 +297,6 @@ def getLogLevelConst(strlvl):
 		elif strlvl == 'silent':
 			res = 1000
 		
-		print res
 		return res
 
 

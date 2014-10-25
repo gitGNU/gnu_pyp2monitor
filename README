@@ -37,7 +37,6 @@ TODO:
 	* Two's complement on a data
 	
 	* Add files output (done for csv)
-	* Catch crl+c in pyP2SerialMon
 
 Howto :
 -------
@@ -76,6 +75,7 @@ Notes :
 		- a|add=integer to add at the graphics value
 		- c|color=graphic color (with color name or in hex notation : #rrggbb)
 		- l|label=graphic label
+		- f|format=diff|DATEFORMAT diff mean that ou will use relatives notation like 10m (10 min in future) -1h ( 1 hour in the past) DATEFORMAT is a date format like date use ( man 1 date ) to specify end and begin dates 
 	example of query :
 		"b=now;t=-10h;d=date;a=1:x" "b=now;t=-10h;n=10;a=1:y,sc=0.5" for a graphic from the last 10 hours with data[10]
 
