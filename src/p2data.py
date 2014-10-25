@@ -55,7 +55,7 @@ class P2Query:
 	# @param beg A timestamp representing the lower handled date and time
 	# @param end A timestamp representing the biggest handled date and time
 	# @param time Used if one of param beg or end is set to None. Represent length of the time range.
-	def __init__(self,dateFormat, colNum, beg=None, end=None, time=None):
+	def __init__(self,dateFormat, colNum, firstTs, beg=None, end=None, time=None, ):
 		
 		##The higher date and time of the date range. Stored as a timestamp.
 		self.beg = None
@@ -70,7 +70,7 @@ class P2Query:
 		#store the first timestamp
 		if beg != None:
 			if beg == 'first':
-				self.beg = 0
+				self.beg = firstTs
 			else:
 				if dateFormat == 'diff':
 					secs=P2Query.fromInterval(beg)
@@ -166,6 +166,10 @@ class P2Query:
 	##Return the first timestamp ( P2Query::beg )
 	def getBeg(self):
 		return self.beg
+		
+	def setBeg(self, val):
+		self.beg = val
+		pass
 	
 	##Return the last timestamp ( P2Query::end )
 	def getEnd(self):
@@ -205,7 +209,11 @@ class P2Datas:
 		self.tmpfile = None
 		first = True
 		
+		#oldest data's timestamp
+		firstTs = self.db.getFirst()
+		
 		for query in queries:
+			
 			args = P2Datas.queryToDict(query, queryArgSep)
 			self.qArgs.append(args)
 			if 'format' not in args:
@@ -213,7 +221,7 @@ class P2Datas:
 				exit(1)
 			elif 'num' not in args:
 				print >> sys.stderr, 'Error no data id number specified in query '+query
-			self.queries.append(P2Query(args['format'], args['num'],args['begin'],args['end'],args['time']))
+			self.queries.append(P2Query(args['format'], args['num'], firstTs, args['begin'],args['end'],args['time']))
 			curq = self.queries[-1:][0]
 			diff = curq.getEnd() - curq.getBeg()
 			if diff > self.maxDiff:

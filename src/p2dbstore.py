@@ -92,7 +92,17 @@ class P2DbStore:
 		
 		#Return selected rows as an array
 		return self.c.fetchall()
-			
+	
+	##Retrieve the oldest date in the db
+	#
+	#@return The smallest timestamp in the db
+	def getFirst(self):
+		req = 'SELECT * FROM p2data ORDER BY date LIMIT 1'
+		self.c.execute(req, ())
+		res = self.c.fetchone()
+		if res != None:
+			res = res[0]
+		return res
 	
 	##P2DbStore destructor
 	def __del__(self):

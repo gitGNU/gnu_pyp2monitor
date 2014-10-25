@@ -51,7 +51,6 @@ if 'field_list' in args and args['field_list']:
 		print i,':\t'+names[i]
 	exit(0)
 
-print args
 if args['database']:
 	if args['query'] != None:
 		g = tempfile.NamedTemporaryFile('w+',-1,'pyP2gnuplotcommand')
@@ -80,7 +79,7 @@ if args['database']:
 			gbuff+='set terminal wxt\n'
 		
 		if args['title'] != None:
-			gbuff+='set title '+args['title']+'\n'
+			gbuff+='set title "'+args['title']+'"\n'
 		if not rep is False:
 			(inFmt,outFmt) = rep
 			gbuff+='set xdata time\n'
