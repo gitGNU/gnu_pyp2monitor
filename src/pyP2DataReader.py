@@ -85,7 +85,7 @@ if args['database']:
 			(inFmt,outFmt) = rep
 			gbuff+='set xdata time\n'
 			gbuff+='set timefmt "'+inFmt+'"\n'
-			gbuff+='set format x "'+outFmt+'"\n'
+			gbuff+='set format x "%H:%M:%S"\n'
 			gbuff+='set timefmt "'+inFmt+'"\n'
 			
 		#adding the plot command (it loads data in a file also)

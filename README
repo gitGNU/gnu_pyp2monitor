@@ -41,14 +41,14 @@ TODO:
 Howto :
 -------
 
-* Furnace monitor : ./run_mon.sh
+* Furnace monitor : ./pyP2_monitor
 
 
-* Data reader : ./run_read.sh
+* Data reader : ./pyP2_dprocess
 
 	examples :
-		./run_read.sh -d ./p2.db -q 'b=-26h,e=-24h,f=diff,n=5' -q 'b=-26h,e=-24h,f=diff,n=7'
-		./run_read.sh -d ./p2.db -q 'b=-26h,e=-24h,f=diff,n=5' -q 'b=-26h,e=-24h,f=diff,n=7' -q 'b=-30h,e=-28h,f=diff,n=7' -q 'b=-30h,e=-28h,f=diff,n=5'
+		./pyP2_dprocess -d ./p2.db -q 'b=-26h,e=-24h,f=diff,n=5' -q 'b=-26h,e=-24h,f=diff,n=7'
+		./pyP2_dprocess -d ./p2.db -q 'b=-26h,e=-24h,f=diff,n=5' -q 'b=-26h,e=-24h,f=diff,n=7' -q 'b=-30h,e=-28h,f=diff,n=7' -q 'b=-30h,e=-28h,f=diff,n=5'
 
 * Documentation generation :
 	Go into the pyP2Monitor directory and run : doxygen Doxygen.conf
@@ -57,7 +57,7 @@ Howto :
 	Running ./clean.sh remove the doc folder and src/*.pyc
 
 * Csv database dump :
-	./run_read.sh -d ./p2.db --csvdump /tmp/db_dump.csv
+	./pyP2_dprocess -d ./p2.db --csvdump /tmp/db_dump.csv
 
 
 Notes :
@@ -68,7 +68,7 @@ Notes :
 		- e|end=end_date (special value "now" and "first")
 		- t|time=numeric time length with unit suffix (s seconds, m minutes, h hours, d days)
 		- d|data=data name
-		- n|num=data number id
+		- n|num=data number id (see pyP2_dprocess --list-field )
 		- a|axes=axes identifier ( of the form : idGraphic:axe. example 2:y ) ( !!! NOT IMPLEMENTED !!! )
 		- s|style=gnuplot graphic style (line, dots, pulse...)
 		- sc|scale=graphic scale as a float value
