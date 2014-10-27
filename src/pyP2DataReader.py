@@ -66,7 +66,7 @@ if args['database']:
 				cvsout = open(args['output'], "w+");
 			
 			#csv dumping
-			datas.getPlotData(True, cvsout)
+			datas.getPlotData(True, cvsout,';')
 			
 			if args['output'] != '-':
 				close(cvsout)

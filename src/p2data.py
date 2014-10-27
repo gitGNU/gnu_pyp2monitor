@@ -369,11 +369,13 @@ class P2Datas:
 					if csv:
 						#csv formating
 						okData = True
-						dataBuff+=str(float(val)*float(scale)+float(add))
+						dataBuff+=sep+str(float(val)*float(scale)+float(add))
 					else:
 						#gnuplot formating
 						tmpfd[i].write(str(ts)+' '+str(float(val)*float(scale)+float(add))+'\n')
 						tmpfd[i].flush()
+				elif csv:
+					dataBuff+=sep
 						
 			if csv and okData:
 				#csv line output
