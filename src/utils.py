@@ -204,7 +204,7 @@ def readerArgParse(usage = False):
 	out_arg.add_argument('-o', '--output', action='store', type=str, default='out', metavar='FILENAME',
 			help='Output file')
 	out_arg.add_argument('-f', '--format', action='store', choices=['csv', 'png', 'jpg', 'svg', 'gnuplot'], default='gnuplot', metavar='FORMAT',
-			help='Output format (png, jpg, svg, data, gnuplot)')
+			help='Output format (csv, png, jpg, svg, gnuplot)')
 	out_arg.add_argument('-t', '--title', action='store', type=str, default=None, metavar='STRING',
 			help='Output title')
 	out_arg.add_argument('-r', '--resolution', action='store', type=str, default=None, metavar='width,height',

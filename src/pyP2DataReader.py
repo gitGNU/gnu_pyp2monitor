@@ -69,7 +69,7 @@ if args['database']:
 			datas.getPlotData(True, cvsout,';')
 			
 			if args['output'] != '-':
-				close(cvsout)
+				cvsout.close()
 			
 		else:
 			#gnuplot command preparation
