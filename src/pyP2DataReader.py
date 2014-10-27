@@ -52,69 +52,66 @@ if 'field_list' in args and args['field_list']:
 	exit(0)
 
 if args['database']:
-	if args['query'] != None and args['format'] != 'csv':
-		g = tempfile.NamedTemporaryFile('w+',-1,'pyP2gnuplotcommand')
-		
+	if args['query'] != None:
 		datas = p2data.P2Datas(args['database'],args['query'],args['separator'])
 		
 		datas.populate()
 		
-		rep = datas.getDateTimeFormats()
-		
-		gbuff = ""
-		
-		#gnuplot command preparation
-		if not (args['format'] == None or args['format'] == 'gnuplot'):
-			if args['format'] == 'png':
-				gbuff+='set terminal png'
-			elif args['format'] == 'svg':
-				gbuff+='set terminal svg'
-			elif args['format'] == 'jpg':
-				gbuff+='set terminal jpg'
-			if args['resolution'] != None:
-				gbuff+=' size '+args['resolution']
-			gbuff+='\n'
-			gbuff+='set output "'+args['output']+'"\n'
-		else:
-			gbuff+='set terminal wxt\n'
-		
-		if args['title'] != None:
-			gbuff+='set title "'+args['title']+'"\n'
-		if not rep is False:
-			(inFmt,outFmt) = rep
-			gbuff+='set xdata time\n'
-			gbuff+='set timefmt "'+inFmt+'"\n'
-			gbuff+='set format x "%H:%M:%S"\n'
-			gbuff+='set timefmt "'+inFmt+'"\n'
+		if args['format'] == 'csv':
 			
-		#adding the plot command (it loads data in a file also)
-		gbuff += datas.getPlotCommand()
-		logger.debug("Writing gnuplot options : "+ gbuff)
-		g.write(gbuff)
-		g.flush()
-		
-		os.system('gnuplot --persist "'+g.name+'"')
-		
-		if args['format'] == 'gnuplot':
-			raw_input('Please press return to continue...\n')
-		
-		g.close()
-	
-	elif args['format'] == 'csv':
-		datas = p2data.P2Datas(args['database'],args['query'],args['separator'])
-		datas.populate()
-		
-		
-		if args['output'] == '-':
-			cvsout=sys.stdout
+			#opening output file
+			if args['output'] == '-':
+				cvsout=sys.stdout
+			else:
+				cvsout = open(args['output'], "w+");
+			
+			#csv dumping
+			datas.getPlotData(True, cvsout)
+			
+			if args['output'] != '-':
+				close(cvsout)
+			
 		else:
-			cvsout = open(args['output'], "w+");
-		
-		datas.csvoutput(cvsout)
-		
-		if args['output'] != '-':
-			close(cvsout)
-		
+			#gnuplot command preparation
+			gbuff = ""
+			g = tempfile.NamedTemporaryFile('w+',-1,'pyP2gnuplotcommand')
+			rep = datas.getDateTimeFormats()
+			
+			if not (args['format'] == None or args['format'] == 'gnuplot'):
+				if args['format'] == 'png':
+					gbuff+='set terminal png'
+				elif args['format'] == 'svg':
+					gbuff+='set terminal svg'
+				elif args['format'] == 'jpg':
+					gbuff+='set terminal jpg'
+				if args['resolution'] != None:
+					gbuff+=' size '+args['resolution']
+				gbuff+='\n'
+				gbuff+='set output "'+args['output']+'"\n'
+			else:
+				gbuff+='set terminal wxt\n'
+			
+			if args['title'] != None:
+				gbuff+='set title "'+args['title']+'"\n'
+			if not rep is False:
+				(inFmt,outFmt) = rep
+				gbuff+='set xdata time\n'
+				gbuff+='set timefmt "'+inFmt+'"\n'
+				gbuff+='set format x "%H:%M:%S"\n'
+				gbuff+='set timefmt "'+inFmt+'"\n'
+				
+			#adding the plot command (it loads data in a file also)
+			gbuff += datas.getPlotCommand()
+			logger.debug("Writing gnuplot options : "+ gbuff)
+			g.write(gbuff)
+			g.flush()
+			
+			os.system('gnuplot --persist "'+g.name+'"')
+			
+			if args['format'] == 'gnuplot':
+				raw_input('Please press return to continue...\n')
+			
+			g.close()
 		exit(0)
 		
 	else:

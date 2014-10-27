@@ -305,67 +305,24 @@ class P2Datas:
 						tofill.append(self.queries[t])
 					P2Datas.fillQuery(datas, tofill)
 		pass
-		
-	def csvoutput(self, outfd, sep=";"):
-		
-		datasRes = []
-		
-		if self.sameRange:
-			trange = self.queries[0].getKeys()
-		else:
-			trange = range(0,self.maxDiff)
-		
-		for t in trange:
-			
-			#output one line
-			dataBuff = ''
-			okData = False
-			
-			for i in range(len(self.queries)):
-				
-				query = self.queries[i] #the query
-				args = self.qArgs[i] #The query args
-				
-				ts = t
-				if not self.sameRange:
-					ts = ts + query.getBeg()
-				ts = int(ts)
-				
-				#Retrieving scale and correction
-				if 'add' in args:
-					add = args['add']
-				else:
-					add=0
-				if 'scale' in args:
-					scale = args['scale']
-				else:
-					scale = 1
-				val = query.getVal(ts)
-				
-				dataBuff+=sep
-				if val is not False:
-					okData = True
-					dataBuff+=str(float(val)*float(scale)+float(add))
-			
-			if okData:
-				outfd.write(str(ts)+dataBuff+'\n');
 			
 			
 	##Write GnuPlot's datas temporary file
 	#
 	# Use handled query to create and populate GnuPlot's temporary files.
-	def getPlotData(self):
+	def getPlotData(self, csv = False, outfd = None, sep = None):
 		
-		if self.tmpfile != None:
-			for t in self.tmpfile:
-				t.close()
-			self.tmpfile = None
-		
-		self.tmpfile = []
-		tmpfd = []
-		for i in range(len(self.queries)):
-			self.tmpfile.append(tempfile.NamedTemporaryFile('w+b',-1,'pyP2gnuplotdatas'))
-		tmpfd=self.tmpfile
+		if not csv:
+			if self.tmpfile != None:
+				for t in self.tmpfile:
+					t.close()
+				self.tmpfile = None
+			
+			self.tmpfile = []
+			tmpfd = []
+			for i in range(len(self.queries)):
+				self.tmpfile.append(tempfile.NamedTemporaryFile('w+b',-1,'pyP2gnuplotdatas'))
+			tmpfd=self.tmpfile
 		
 		#Creating a dataSet foreach query
 		
@@ -373,12 +330,17 @@ class P2Datas:
 		#Formating datas from P2Query
 		datasRes = []
 		
+		#Processing optimisation if same range
 		if self.sameRange:
-			trange = self.queries[0].getKeys()
+			trange = sorted(self.queries[0].getKeys())
 		else:
 			trange = range(0,self.maxDiff)
 		
 		for t in trange:
+			
+			#vars for csv output
+			dataBuff = ''
+			okData = False
 			
 			#Then put data
 			for i in range(len(self.queries)):
@@ -404,9 +366,18 @@ class P2Datas:
 				
 				
 				if val is not False:
-					tmpfd[i].write(str(ts)+' '+str(float(val)*float(scale)+float(add))+'\n')
-					tmpfd[i].flush()
-					
+					if csv:
+						#csv formating
+						okData = True
+						dataBuff+=str(float(val)*float(scale)+float(add))
+					else:
+						#gnuplot formating
+						tmpfd[i].write(str(ts)+' '+str(float(val)*float(scale)+float(add))+'\n')
+						tmpfd[i].flush()
+						
+			if csv and okData:
+				#csv line output
+				outfd.write(str(ts)+dataBuff+'\n');
 		pass
 	
 	##Return the GnuPlot's plot command with the good arguments
