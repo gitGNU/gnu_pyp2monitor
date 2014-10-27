@@ -47,7 +47,7 @@ def gentle_exit(signal, frame):
 def start_daemon(pidfile):
 	arg = []
 	for e in sys.argv:
-		if e != '-B':	#Deleting background option
+		if e != '-B' and e != '--background':	#Deleting background option
 			arg.append(e)
 	logger.debug("Starting background process...")
 	pid = os.spawnv(os.P_NOWAIT,arg[0], arg)
@@ -55,7 +55,7 @@ def start_daemon(pidfile):
 	fdpid.write(str(pid))
 	fdpid.close()
 	
-	print "Background process started. Pid = "+str(pid)
+	logger.debug("Background process started. Pid = "+str(pid))
 	
 	return pid
 
@@ -79,7 +79,7 @@ elif args['stop']: #or kill an existing daemon
 	pidfd = open(pidfile,"r")
 	pid = int(pidfd.read())
 	os.kill(pid, 10)
-	print "Sig 10 send to process",pid
+	logger.debug("Sig 10 send to process",pid)
 	exit(0)
 	
 

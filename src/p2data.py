@@ -26,12 +26,11 @@
 
 import time
 import datetime
-import json
 import logging
 import tempfile
 
 
-import os, string, tempfile, types, sys, time
+import os, string, tempfile, types, sys
 
 import p2msg
 import p2dbstore
@@ -532,19 +531,6 @@ def colNames():
 	res.append("z")
 
 	return res
-
-
-##Return a json string from datas (OBSOLETE)
-def datas2Json(datas):
-
-	res = [colNames()]
-
-	for data in datas:
-		dataList = p2msg.P2Msg.hex2list(data[1])
-		if len(dataList) == 48:
-			res.append(data2List(data[0], dataList ))
-	
-	return json.dumps(res)
 
 ##Dump the database in csv format
 #
