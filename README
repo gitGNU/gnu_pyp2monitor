@@ -60,9 +60,6 @@ Howto :
 	./pyP2_dprocess -d ./p2.db --csvdump /tmp/db_dump.csv
 
 
-Notes :
--------
-
  * Data query syntax : A query is a list of couple field=value. List of allowed fields :
  		- b|begin=begin_date (special value "now" and "first")
 		- e|end=end_date (special value "now" and "first")
@@ -73,13 +70,16 @@ Notes :
 		- s|style=gnuplot graphic style (line, dots, pulse...)
 		- sc|scale=graphic scale as a float value
 		- a|add=integer to add at the graphics value
-		- c|color=graphic color (with color name or in hex notation : #rrggbb)
+		- c|color=graphic color (with color name or in hex notation : #rrggbb )
 		- l|label=graphic label
-		- f|format=diff|DATEFORMAT diff mean that ou will use relatives notation like 10m (10 min in future) -1h ( 1 hour in the past) DATEFORMAT is a date format like date use ( man 1 date ) to specify end and begin dates 
+		- f|format=diff|DATEFORMAT diff mean that ou will use relatives notation like now , first (the date of first data), 10m (10 min in future) or -1h ( 1 hour in the past) DATEFORMAT is a date format like date use ( man 1 date ) to specify end and begin dates 
 	example of query :
-		"b=now;t=-10h;d=date;a=1:x" "b=now;t=-10h;n=10;a=1:y,sc=0.5" for a graphic from the last 10 hours with data[10]
+		"b=-10h,end=now,f=diff,n=10" for a graphic from the last 10 hours with data[10]
 
-	when differents time ranges are specified for data the programm create a proper date field in the right unit
+	when differents time ranges are specified for data the programm creates a proper date field in the right unit
+
+Notes :
+-------
 
  * Log size estimation :
 	If we log every bytes of a data frame, we have to log 106 Bytes + 32 bits (4Bytes) for the timestamp and a log every second. The number of logged data is 3600 * 24 * 365, and the size for a year of logs is (110 * 3600 * 24 * 365) ~ 3GB

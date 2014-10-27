@@ -52,7 +52,7 @@ if 'field_list' in args and args['field_list']:
 	exit(0)
 
 if args['database']:
-	if args['query'] != None:
+	if args['query'] != None and args['format'] != 'csv':
 		g = tempfile.NamedTemporaryFile('w+',-1,'pyP2gnuplotcommand')
 		
 		datas = p2data.P2Datas(args['database'],args['query'],args['separator'])
@@ -99,6 +99,23 @@ if args['database']:
 			raw_input('Please press return to continue...\n')
 		
 		g.close()
+	
+	elif args['format'] == 'csv':
+		datas = p2data.P2Datas(args['database'],args['query'],args['separator'])
+		datas.populate()
+		
+		
+		if args['output'] == '-':
+			cvsout=sys.stdout
+		else:
+			cvsout = open(args['output'], "w+");
+		
+		datas.csvoutput(cvsout)
+		
+		if args['output'] != '-':
+			close(cvsout)
+		
+		exit(0)
 		
 	else:
 		print >> sys.stderr, 'Error, no query specified with database'

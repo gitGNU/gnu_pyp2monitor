@@ -203,7 +203,7 @@ def readerArgParse(usage = False):
 
 	out_arg.add_argument('-o', '--output', action='store', type=str, default='out', metavar='FILENAME',
 			help='Output file')
-	out_arg.add_argument('-f', '--format', action='store', choices=['png', 'jpg', 'svg', 'data', 'gnuplot'], default='gnuplot', metavar='FORMAT',
+	out_arg.add_argument('-f', '--format', action='store', choices=['csv', 'png', 'jpg', 'svg', 'gnuplot'], default='gnuplot', metavar='FORMAT',
 			help='Output format (png, jpg, svg, data, gnuplot)')
 	out_arg.add_argument('-t', '--title', action='store', type=str, default=None, metavar='STRING',
 			help='Output title')

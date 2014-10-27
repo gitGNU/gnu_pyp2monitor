@@ -166,10 +166,6 @@ class P2Query:
 	##Return the first timestamp ( P2Query::beg )
 	def getBeg(self):
 		return self.beg
-		
-	def setBeg(self, val):
-		self.beg = val
-		pass
 	
 	##Return the last timestamp ( P2Query::end )
 	def getEnd(self):
@@ -306,6 +302,48 @@ class P2Datas:
 						tofill.append(self.queries[t])
 					P2Datas.fillQuery(datas, tofill)
 		pass
+		
+	def csvoutput(self, outfd, sep=";"):
+		
+		datasRes = []
+		for t in range(0,self.maxDiff):
+			
+			#If there is data, put the first column : time
+			if self.sameRange:
+				#In this case everyone has the same begin
+				beg = self.queries[0].getBeg()
+				time = str(t+beg)
+			else:
+				time = str(t)
+			
+			#output one line
+			dataBuff = ''
+			okData = False
+			
+			for i in range(len(self.queries)):
+				
+				query = self.queries[i] #the query
+				args = self.qArgs[i] #The query args
+				beg = query.getBeg()
+				
+				#Retrieving scale and correction
+				if 'add' in args:
+					add = args['add']
+				else:
+					add=0
+				if 'scale' in args:
+					scale = args['scale']
+				else:
+					scale = 1
+				val = query.getVal(t+beg)
+				
+				dataBuff+=sep
+				if val is not False:
+					okData = True
+					dataBuff+=str(float(val)*float(scale)+float(add))
+			
+			if okData:
+				outfd.write(time+dataBuff+'\n');
 			
 			
 	##Write GnuPlot's datas temporary file
