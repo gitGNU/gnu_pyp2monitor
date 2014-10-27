@@ -170,6 +170,9 @@ class P2Query:
 	##Return the last timestamp ( P2Query::end )
 	def getEnd(self):
 		return self.end
+		
+	def getKeys(self):
+		return self.datas.keys();
 	
 
 
@@ -306,15 +309,13 @@ class P2Datas:
 	def csvoutput(self, outfd, sep=";"):
 		
 		datasRes = []
-		for t in range(0,self.maxDiff):
-			
-			#If there is data, put the first column : time
-			if self.sameRange:
-				#In this case everyone has the same begin
-				beg = self.queries[0].getBeg()
-				time = str(t+beg)
-			else:
-				time = str(t)
+		
+		if self.sameRange:
+			trange = self.queries[0].getKeys()
+		else:
+			trange = range(0,self.maxDiff)
+		
+		for t in trange:
 			
 			#output one line
 			dataBuff = ''
@@ -324,7 +325,11 @@ class P2Datas:
 				
 				query = self.queries[i] #the query
 				args = self.qArgs[i] #The query args
-				beg = query.getBeg()
+				
+				ts = t
+				if not self.sameRange:
+					ts = ts + query.getBeg()
+				ts = int(ts)
 				
 				#Retrieving scale and correction
 				if 'add' in args:
@@ -335,7 +340,7 @@ class P2Datas:
 					scale = args['scale']
 				else:
 					scale = 1
-				val = query.getVal(t+beg)
+				val = query.getVal(ts)
 				
 				dataBuff+=sep
 				if val is not False:
@@ -343,7 +348,7 @@ class P2Datas:
 					dataBuff+=str(float(val)*float(scale)+float(add))
 			
 			if okData:
-				outfd.write(time+dataBuff+'\n');
+				outfd.write(str(ts)+dataBuff+'\n');
 			
 			
 	##Write GnuPlot's datas temporary file
@@ -367,22 +372,24 @@ class P2Datas:
 				
 		#Formating datas from P2Query
 		datasRes = []
-		for t in range(0,self.maxDiff):
-			
-			#If there is data, put the first column : time
-			if self.sameRange:
-				#In this case everyone has the same begin
-				beg = self.queries[0].getBeg()
-				time = str(t+beg)
-			else:
-				time = str(t)
+		
+		if self.sameRange:
+			trange = self.queries[0].getKeys()
+		else:
+			trange = range(0,self.maxDiff)
+		
+		for t in trange:
 			
 			#Then put data
 			for i in range(len(self.queries)):
 				
 				query = self.queries[i] #the query
 				args = self.qArgs[i] #The query args
-				beg = query.getBeg()
+				
+				ts = t
+				if not self.sameRange:
+					ts = ts + query.getBeg()
+				ts = int(ts)
 				
 				#Retrieving scale and correction
 				if 'add' in args:
@@ -393,11 +400,11 @@ class P2Datas:
 					scale = args['scale']
 				else:
 					scale = 1
-				val = query.getVal(t+beg)
+				val = query.getVal(ts)
 				
 				
 				if val is not False:
-					tmpfd[i].write(time+' '+str(float(val)*float(scale)+float(add))+'\n')
+					tmpfd[i].write(str(ts)+' '+str(float(val)*float(scale)+float(add))+'\n')
 					tmpfd[i].flush()
 					
 		pass
