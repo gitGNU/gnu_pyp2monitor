@@ -21,44 +21,15 @@
 
 #Python libs import
 import serial, signal, time, sys, os
-import time
 
 #pyP2Monitor import
-import p2com 
 from p2com import *
-import p2proto
 from p2proto import *
-import p2msg
 from p2msg import *
-import utils
+from p2monitor import *
 
 com = None
 pidfile= ""
-
-##Gentle exit to manage sigint
-def gentle_exit(signal, frame):
-	logger.critical("signal caught, exiting")
-	#Serial port closing
-	com.stop()
-	os.unlink(pidfile)
-	sys.exit(0)
-
-##"Fork" into background
-def start_daemon(pidfile):
-	arg = []
-	for e in sys.argv:
-		if e != '-B' and e != '--background':	#Deleting background option
-			arg.append(e)
-	logger.debug("Starting background process...")
-	pid = os.spawnv(os.P_NOWAIT,arg[0], arg)
-	fdpid = open(pidfile,"w+")
-	fdpid.write(str(pid))
-	fdpid.close()
-	
-	logger.debug("Background process started. Pid = "+str(pid))
-	
-	return pid
-
 
 signal.signal(signal.SIGINT, gentle_exit)
 signal.signal(10, gentle_exit)
@@ -98,7 +69,30 @@ if args['csv'] != None:
 #Serial port opening
 com = P2Furn(args['port'])
 
-#Running wanted stages
+"""
+	if we got only one stage and this stage is all
+	run the monitor and try to handle timeouts, errors etc to keep the
+	monitoring process alive
+"""
+if len(args['stage']) == 1 and args['stage'][0] == 'all':
+	
+	stages = [1,2,3]
+	curStage = 0
+	retry = 0
+	
+	while True:
+		
+		for stage in stages:
+			try:
+				runMonitorStages(com, stages[curStage], 3)
+			except p2com.P2ComError as e:
+				#After 3 retry the current stage failed
+				#We wait 5 seconds then we begin the whole process again
+				logger.error("To many fails. Waiting and starting with authentication again.")
+				time.sleep(5)
+				break
+	
+#Else running the multiples wanted stages
 for stage in args['stage']:
 	maxretry = 3
 	
@@ -113,47 +107,7 @@ for stage in args['stage']:
 	elif stage == 'data':
 		stages = 3
 		
-	if stages&1:
-		again = 0
-                while again<maxretry:
-                        try:
-                                com.runAuth(P2Furn.userId(args['user']))
-                                again = maxretry+1
-                        except p2com.P2ComError as e:
-				if again < maxretry:
-                                        logger.error("Authentication stage failed : "+str(e))
-                                        again+=1
-                                else:
-                                        logger.critical("Authentication stage failed again after "+str(maxretry)+" attempts")
-                                        raise e
-
-	if stages&2:
-		again = 0
-                while again<maxretry:
-                        try:
-                                com.runInit()
-                                again = maxretry+1
-                        except p2com.P2ComError as e:
-				if again < maxretry:
-                                	logger.error("Initialisation stage failed : "+str(e))
-                                	again+=1
-				else:
-                                        logger.critical("Initialisation stage failed again after "+str(maxretry)+" attempts")
-                                        raise e
-
-	if stages&3:
-		again = 0
-                while again<maxretry:
-                        try:
-                                com.readData(float(args['data_wait']),storage)
-                                again = maxretry+1
-                        except p2com.P2ComError as e:
-				if again < maxretry:
-                                        logger.error("DataReading stage failed : "+str(e))
-                                        again+=1
-                                else:  
-                                        logger.critical("DataReading stage failed again after "+str(maxretry)+" attempts")
-                                        raise e
+	runMonitorStages(com, stages, maxretry)
 
 #Serial port closing
 com.stop()
