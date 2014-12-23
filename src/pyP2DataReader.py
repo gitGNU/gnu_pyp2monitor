@@ -44,6 +44,10 @@ if args['csvdump'] != None and args['database']:
 	p2data.csvDump(args['database'], args['csvdump'])
 	exit(0)
 
+if args['last_data'] != None:
+	p2data.csvLastDataDump(args['last_data'])
+	exit(0)
+
 if 'field_list' in args and args['field_list']:
 	names = p2data.colNames()
 	print "Field list :"

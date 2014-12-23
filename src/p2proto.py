@@ -203,7 +203,7 @@ class P2Furn:
 			begin with "4D3"
 		"""
 		while self.curStage == P2Furn.STAGE_INIT:
-			logger.info("Init message exchange #"+str(counter))
+			logger.debug("Init message exchange #"+str(counter))
 			self.com.sendMsg(outMsg)
 			
 			try:
@@ -326,6 +326,8 @@ class P2Furn:
 		for (method,name) in storage:
 			if method == "sqlite":
 				storObj.append(("sqlite", P2DbStore(name)))
+			elif method == "lastdata":
+				storObj.append(("lastdata", name))
 			elif method == "file":
 				storObj.append(("file", open(name, 'a')))
 			elif method == "csv":
@@ -378,6 +380,11 @@ class P2Furn:
 						#Only store frame with valid checksum
 						if inMsg.check():
 							obj.insert(curDate.strftime("%s"), inMsg.getData(P2Msg.FMT_HEX_STR))
+					elif family == "lastdata":
+						if inMsg.check():
+							lfile = open(obj, "w+")
+							lfile.write(curDate.strftime("%s")+"\n"+inMsg.getData(P2Msg.FMT_HEX_STR))
+							lfile.close()
 					elif family == "csv":
 						if inMsg.check():
 							obj.writerow([curDate.strftime("%s")]+inMsg.getData(P2Msg.FMT_LIST))

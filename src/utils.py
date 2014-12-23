@@ -122,6 +122,8 @@ def monitorArgParse(usage = False):
 
 	data_arg.add_argument('-d', '--database', action='append', type=str, metavar='SQLITE_DB_FILE',
 						help='Tell the programm to store data in SQLITE_DB_FILE sqlite database')
+	data_arg.add_argument('-l', '--last-data', action='store', type=str, metavar='FILENAME',
+						help='Tell the programm to store the latest readed data in FILENAME (used with -L option of the reader)')
 	data_arg.add_argument('-c', '--csv', action='append', type=str, metavar='CSV_FILE',
 						help='Tell the programm to store data in CSV_FILE file in csv format')
 	data_arg.add_argument('-F', '--file', action='append', type=str, metavar='FILENAME',
@@ -204,11 +206,14 @@ def readerArgParse(usage = False):
 	out_arg.add_argument('-o', '--output', action='store', type=str, default='out', metavar='FILENAME',
 			help='Output file')
 	out_arg.add_argument('-f', '--format', action='store', choices=['csv', 'png', 'jpg', 'svg', 'gnuplot'], default='gnuplot', metavar='FORMAT',
-			help='Output format (csv, png, jpg, svg, gnuplot)')
+			help='Output format (png, jpg, svg, data, gnuplot)')
 	out_arg.add_argument('-t', '--title', action='store', type=str, default=None, metavar='STRING',
 			help='Output title')
 	out_arg.add_argument('-r', '--resolution', action='store', type=str, default=None, metavar='width,height',
 			help='Set the size of an output image')
+
+	out_arg.add_argument('-L', '--last-data', action='store', type=str, default=None, metavar='FILENAME',
+			help='Output the last furnace data (readed from FILENAME) in CSV on stdout. See -l option from the monitor') 
 
 	out_arg.add_argument('--csvdump', action="store", type=str, default=None, metavar='FILENAME.csv', help='Dump the db into a csv file ( - for stdout)')
 	

@@ -96,13 +96,23 @@ class P2DbStore:
 	##Retrieve the oldest date in the db
 	#
 	#@return The smallest timestamp in the db
-	def getFirst(self):
+	def getFirst(self, oldest=True):
 		req = 'SELECT * FROM p2data ORDER BY date LIMIT 1'
 		self.c.execute(req, ())
 		res = self.c.fetchone()
 		if res != None:
 			res = res[0]
 		return res
+	
+	##Retrieve the last (newest) data in db
+	#
+  # Can be a relatively long query
+  #
+	#@return The bigger timestamp
+	def getLastData(self):
+		req = 'SELECT * FROM p2data ORDER BY date DESC LIMIT 1'
+		self.c.execute(req,())
+		return self.c.fetchall()
 	
 	##P2DbStore destructor
 	def __del__(self):

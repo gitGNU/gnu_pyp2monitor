@@ -26,11 +26,12 @@
 
 import time
 import datetime
+import json
 import logging
 import tempfile
 
 
-import os, string, tempfile, types, sys
+import os, string, tempfile, types, sys, time
 
 import p2msg
 import p2dbstore
@@ -469,9 +470,9 @@ class P2Datas:
 #@param data The datas
 #@param dateFormat The date's display format
 #@return An integer array (except for the first item wich is a date as a string)
-def data2List(timestamp, data, dateFormat="%Y/%m/%d_%H:%m:%S"):
+def data2List(timestamp, data, dateFormat="%Y/%m/%d_%H:%M:%S"):
 	res = []
-	date = datetime.datetime.fromtimestamp(timestamp)
+	date = datetime.datetime.fromtimestamp(float(timestamp))
 
 	#Adding timestamp
 	res.append(date.strftime(dateFormat))
@@ -488,6 +489,8 @@ def data2List(timestamp, data, dateFormat="%Y/%m/%d_%H:%m:%S"):
 	res[14] *= 0.0029
 	res[15] /= 2.0
 	res[16] /= 2.0
+	res[17] /= 2.0
+	res[18] /= 2.0
 	res[24] /= 2.0
 	#print 'lenres',len(res)
 	
@@ -532,6 +535,18 @@ def colNames():
 
 	return res
 
+##Return a json string from datas (OBSOLETE)
+def datas2Json(datas):
+
+	res = [colNames()]
+
+	for data in datas:
+		dataList = p2msg.P2Msg.hex2list(data[1])
+		if len(dataList) == 48:
+			res.append(data2List(data[0], dataList ))
+	
+	return json.dumps(res)
+
 ##Dump the database in csv format
 #
 # @param filename The filename to write csv in. If - output to stdout
@@ -562,16 +577,40 @@ def csvDump(dbname, filename = '-', header = True, sep="; "):
 	datas = db.getData(0,0) #fetch all datas
 	
 	for (timestamp,data) in datas:
-		dataList = p2msg.P2Msg.hex2list(data)
-		
-		if len(dataList) != 48:
-			#bad len
-			logger.warning("Bad data length "+str(len(dataList))+" : '"+(str(timestamp)+" "+data)+"'")
-		else:
-			dataNums = data2List(timestamp, dataList)
-			for i in range(len(dataNums)):
-				fdout.write(str(dataNums[i]))
-				if i < len(dataNums)-1:
-					fdout.write(sep)
-			fdout.write("\n")
+		csvOutputData(fdout, timestamp, data, sep)
+
+##Print the last data on stdout formated in csv
+#
+# @param lfname The name of the file storing the latest data
+# @param sep The csv field separator
+def csvLastDataDump(lfname, sep = ";"):
+	ts = ""
+	data = ""
 	
+	while len(ts) == 0 or len(data) == 0:
+		lfile = open(lfname, "r")
+		ts = lfile.readline().strip("\n")
+		data = lfile.readline().strip("\n")
+  
+	csvOutputData(sys.stdout,ts, data, sep)
+
+##Output data in csv format
+#
+# @param fdout The file where we will write the data
+# @param data The datas
+# @param sep The csv separator
+def csvOutputData(fdout, timestamp, data, sep):
+	dataList = p2msg.P2Msg.hex2list(data)
+		
+	if len(dataList) != 48:
+		#bad len
+		logger.warning("Bad data length "+str(len(dataList))+" : '"+(str(timestamp)+" "+data)+"'")
+	else:
+		dataNums = data2List(timestamp, dataList)
+		for i in range(len(dataNums)):
+			fdout.write(str(dataNums[i]))
+			if i < len(dataNums)-1:
+				fdout.write(sep)
+		fdout.write("\n")
+	
+
