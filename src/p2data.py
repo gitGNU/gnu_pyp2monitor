@@ -592,6 +592,14 @@ def csvLastDataDump(lfname, sep = ";"):
 		ts = lfile.readline().strip("\n")
 		data = lfile.readline().strip("\n")
   
+  #put header
+	hnames =  colNames()
+	for i in range(len(hnames)):
+		sys.stdout.write(hnames[i])
+		if i < len(hnames)-1:
+			sys.stdout.write(sep)
+	sys.stdout.write("\n")
+  
 	csvOutputData(sys.stdout,ts, data, sep)
 
 ##Output data in csv format

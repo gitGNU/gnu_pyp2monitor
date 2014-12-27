@@ -38,7 +38,7 @@ class P2DbStore:
 	def __init__(self, filename="p2.db"):
 		
 		##The database connection
-		self.conn = sqlite3.connect(filename)
+		self.conn = sqlite3.connect(filename, 60)
 		##The database cursor
 		self.c = self.conn.cursor()
 		self.c.execute('create table if not exists p2data (date integer, data collate binary)')
