@@ -161,21 +161,9 @@ class P2Furn:
 			logger.debug("Sending user Id, waiting for reply.")
 			self.com.write(user)
 		
-			try:
-				msg = self.com.read()
-				retry = False
-				logger.debug("Answer received : "+msg.getStr())
-			except P2ComError as e:
-				if retryCnt < maxRetry:
-					logger.warn("Error while waiting authentication aknowledge. Retry in "+str(retryWait)+"s")
-					logger.debug("Error is : "+e.getErrStr())
-					for i in range(retryWait):
-						time.sleep(1)
-					self.restartSerialPort()
-					retryCnt += 1
-				else:
-					logger.critical("Authentication failed after "+str(retry)+" tries")
-					raise Exception("Authentication to the P2 furnace failed too many times")
+			msg = self.com.read()
+			retry = False
+			logger.debug("Answer received : "+msg.getStr())
 			pass
 	
 	##Run the initialisation stage

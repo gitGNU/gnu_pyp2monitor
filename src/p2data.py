@@ -488,11 +488,15 @@ def data2List(timestamp, data, dateFormat="%Y/%m/%d_%H:%M:%S"):
 	res[12] /= 10.0
 	res[14] *= 0.0029
 	res[15] /= 2.0
+	
+	if res[16] & 0x8000 != 0:
+		#negative temperature
+		res[16] = res[16] - ( 1 << 16 ) #twos complement on 16 bits
 	res[16] /= 2.0
+		
 	res[17] /= 2.0
 	res[18] /= 2.0
 	res[24] /= 2.0
-	#print 'lenres',len(res)
 	
 	return res
 

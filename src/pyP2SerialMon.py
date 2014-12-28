@@ -20,7 +20,7 @@
 #
 
 #Python libs import
-import serial, signal, time, sys, os
+import serial, signal, time, sys, os, traceback
 import time
 
 #pyP2Monitor import
@@ -76,11 +76,14 @@ pidfile = args['pidfile']
 if args['background']:
 	exit(start_daemon(pidfile))
 elif args['stop']: #or kill an existing daemon
-	pidfd = open(pidfile,"r")
-	pid = int(pidfd.read())
-	os.kill(pid, 10)
-	logger.debug("Sig 10 send to process",pid)
-	exit(0)
+	try:
+		pidfd = open(pidfile,"r")
+		pid = int(pidfd.read())
+		os.kill(pid, 10)
+		logger.debug("Sig 10 send to process",pid)
+	except:
+		exit(0)
+	exit(1)
 	
 
 #Store all the data's storage method
@@ -108,58 +111,86 @@ com = P2Furn(args['port'])
 for stage in args['stage']:
 	maxretry = 3
 	
+	infinite = False
+	
 	stages = 0	
 
 	if stage == 'all':
 		stages = 7
+		infinite = True
 	elif stage == 'auth':
 		stages = 1
 	elif stage == 'init':
 		stages = 2
 	elif stage == 'data':
 		stages = 3
-		
-	if stages&1:
-		again = 0
-                while again<maxretry:
-                        try:
-                                com.runAuth(P2Furn.userId(args['user']))
-                                again = maxretry+1
-                        except p2com.P2ComError as e:
-				if again < maxretry:
-                                        logger.error("Authentication stage failed : "+str(e))
-                                        again+=1
-                                else:
-                                        logger.critical("Authentication stage failed again after "+str(maxretry)+" attempts")
-                                        raise e
-
-	if stages&2:
-		again = 0
-                while again<maxretry:
-                        try:
-                                com.runInit()
-                                again = maxretry+1
-                        except p2com.P2ComError as e:
-				if again < maxretry:
-                                	logger.error("Initialisation stage failed : "+str(e))
-                                	again+=1
-				else:
-                                        logger.critical("Initialisation stage failed again after "+str(maxretry)+" attempts")
-                                        raise e
-
-	if stages&3:
-		again = 0
-                while again<maxretry:
-                        try:
-                                com.readData(float(args['data_wait']),storage)
-                                again = maxretry+1
-                        except p2com.P2ComError as e:
-				if again < maxretry:
-                                        logger.error("DataReading stage failed : "+str(e))
-                                        again+=1
-                                else:  
-                                        logger.critical("DataReading stage failed again after "+str(maxretry)+" attempts")
-                                        raise e
+	
+	while True:
+		try:
+			
+			#Run auth stage
+			if stages&1:
+				again = 0
+				while again<maxretry:
+					try:
+						com.runAuth(P2Furn.userId(args['user']))
+						again = maxretry+1
+					except p2com.P2ComError as e:
+						if again < maxretry:
+							logger.error("Authentication stage failed : "+str(e))
+							again+=1
+							time.sleep(10*again)
+						else:
+							logger.critical("Authentication stage failed again after "+str(maxretry)+" attempts")
+							raise e
+			
+			#Run initialisation stage
+			if stages&2:
+				again = 0
+				while again<maxretry:
+					try:
+						com.runInit()
+						again = maxretry+1
+					except p2com.P2ComError as e:
+						if again < maxretry:
+							logger.error("Initialisation stage failed : "+str(e))
+							again+=1
+							time.sleep(10*again)
+						else:
+							logger.critical("Initialisation stage failed again after "+str(maxretry)+" attempts")
+							raise e
+			
+			#Run data exchange stage
+			if stages&3:
+				again = 0
+				while again<maxretry:
+					try:
+						com.readData(float(args['data_wait']),storage)
+						again = maxretry+1
+					except p2com.P2ComError as e:
+						if again < maxretry:
+							logger.error("DataReading stage failed : "+str(e))
+							again+=1
+							time.sleep(10*again)
+						else:  
+							logger.critical("DataReading stage failed again after "+str(maxretry)+" attempts")
+							raise e
+						
+		except p2com.P2ComError as e: #Catch exception raised by stage failed after maxretry
+			if infinite:
+					logger.error("Running stages failed, closing serial port, waiting 60 seconds and trying again...")
+					com.stop()
+					time.sleep(60)
+					logger.info("Opening serial port again and trying again")
+					com = P2Furn(args['port'])
+			else:
+					raise e
+		except SystemExit:
+			raise
+		except:
+				logger.critical(traceback.format_exc())
+				com.stop()
+				exit(1)
 
 #Serial port closing
 com.stop()

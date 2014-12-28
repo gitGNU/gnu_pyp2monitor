@@ -57,7 +57,7 @@ class P2DbStore:
 		val = (timestamp,datas)
 
 		self.c.execute('insert into p2data values (?,?)', val)
-		self.conn.commit()
+		#self.conn.commit()
 		
 		logger.debug('Data inserted in db')
 		logger.debug('Data stored in database')
