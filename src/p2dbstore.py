@@ -32,6 +32,8 @@ logger = utils.getLogger()
 # @ingroup msgprocess
 class P2DbStore:
 
+	INSERTBUFFSZ = 60
+
 	##Create the Database object
 	#
 	#@param filename The Sqlite file name
@@ -42,6 +44,8 @@ class P2DbStore:
 		self.conn = sqlite3.connect(filename, 1, 0, None)
 		##The database cursor
 		self.c = self.conn.cursor()
+		
+		self.insertBuff = []
 		
 		locked = True
 		while locked:
@@ -66,11 +70,18 @@ class P2DbStore:
 		#val = (timestamp,pickle.dumps(datas))
 		val = (timestamp,datas)
 
+		req = 'insert into p2data values (?,?)'
+		
+		self.insertBuff.append(val)
+
 		try:
-			self.c.execute('insert into p2data values (?,?)', val)
-			#self.conn.commit()
+			self.c.executemany(req, self.insertBuff)
+			logger.debug("Inserted "+str(len(self.insertBuff))+" datas")
+			self.insertBuff = []
 		except sqlite3.OperationalError:
-			logger.warning("Data lost because database was locked.")
+			if len(self.insertBuff) > P2DbStore.INSERTBUFFSZ:
+				logger.warning("Data lost after failing too many times to insert because of database lock.")
+				self.insertBuff.pop(0)
 		
 		logger.debug('Data inserted in db')
 		logger.debug('Data stored in database')
@@ -145,7 +156,7 @@ class P2DbStore:
 		locked = True
 		while locked:
 			try:
-				req = 'SELECT * FROM p2data ORDER BY date DESC LIMIT 1'
+				req = 'SELECT * FROM p2data ORDER BY date DESC LIMIT 10'
 				self.c.execute(req,())
 				res =  self.c.fetchall()
 				locked = False

@@ -583,7 +583,7 @@ def csvDump(dbname, filename = '-', header = True, sep="; "):
 				fdout.write(sep)
 		fdout.write("\n")
 	
-	datas = db.getData(0,0) #fetch all datas
+	datas = db.getLastData() #fetch all datas
 	
 	for (timestamp,data) in datas:
 		csvOutputData(fdout, timestamp, data, sep)
