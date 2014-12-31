@@ -60,19 +60,22 @@ Howto :
 	./pyP2_dprocess -d ./p2.db --csvdump /tmp/db_dump.csv
 
 
- * Data query syntax : A query is a list of couple field=value. List of allowed fields :
+Data query syntax :
+-------------------
+ 
+	A query is a list of couple field=value. List of allowed fields :
  		- b|begin=begin_date (special value "now" and "first")
 		- e|end=end_date (special value "now" and "first")
 		- t|time=numeric time length with unit suffix (s seconds, m minutes, h hours, d days)
+		- f|format=diff|DATEFORMAT diff mean that ou will use relatives notation like now , first (the date of first data), 10m (10 min in future) or -1h ( 1 hour in the past) DATEFORMAT is a date format like date use ( man 1 date ) to specify end and begin dates 
 		- d|data=data name
 		- n|num=data number id (see pyP2_dprocess --list-field )
-		- a|axes=axes identifier ( of the form : idGraphic:axe. example 2:y ) ( !!! NOT IMPLEMENTED !!! )
+		- y|yaxe= Set the associated autoscale and y range (can be 1 for right y axe or 2 for the left y axe)
 		- s|style=gnuplot graphic style (line, dots, pulse...)
 		- sc|scale=graphic scale as a float value
 		- a|add=integer to add at the graphics value
 		- c|color=graphic color (with color name or in hex notation : #rrggbb )
 		- l|label=graphic label
-		- f|format=diff|DATEFORMAT diff mean that ou will use relatives notation like now , first (the date of first data), 10m (10 min in future) or -1h ( 1 hour in the past) DATEFORMAT is a date format like date use ( man 1 date ) to specify end and begin dates 
 	example of query :
 		"b=-10h,end=now,f=diff,n=10" for a graphic from the last 10 hours with data[10]
 

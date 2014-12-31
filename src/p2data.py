@@ -183,7 +183,7 @@ class P2Query:
 class P2Datas:
 	
 	##Alias for one letter query parameter to string parameter
-	argsShort = {'b' : 'begin', 'e' : 'end', 't' : 'time', 'f' : 'format', 'd':'data', 'n':'num', 'a':'axes', 's':'style', 'c':'color', 'l':'label', 'sc':'scale', 'a':'add' }
+	argsShort = {'b' : 'begin', 'e' : 'end', 't' : 'time', 'f' : 'format', 'd':'data', 'n':'num', 'y':'yaxe', 's':'style', 'c':'color', 'l':'label', 'sc':'scale', 'a':'add' }
 	##List of argument that have to be set to None after the P2Query creation
 	argsToNone = ['begin','end','time']
 	
@@ -404,7 +404,6 @@ class P2Datas:
 			
 			res += '"'+self.tmpfile[i].name+'" using 1:2 '
 			
-			
 			if 'label' in args:
 				label = args['label']+' '
 			else:
@@ -427,11 +426,17 @@ class P2Datas:
 				if add > 0:
 					label += '+'
 				label += str(add)
-				
+			
 			if 'style' in args:
 				style = args['style']
 			else:
 				style = 'points'
+			
+			if 'yaxe' in args and args['yaxe'] == '2':
+				res += ' axes x1y2 '
+				label += '(y2)'
+			else:
+				res += 'axes x1y1 '
 			
 			res += 'title "'+label+'" '
 			res += ' with '+style+' '
