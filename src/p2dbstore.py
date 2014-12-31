@@ -38,11 +38,21 @@ class P2DbStore:
 	def __init__(self, filename="p2.db"):
 		
 		##The database connection
-		self.conn = sqlite3.connect(filename, 60)
+		#self.conn = sqlite3.connect(filename, 5)
+		self.conn = sqlite3.connect(filename, 1, 0, None)
 		##The database cursor
 		self.c = self.conn.cursor()
-		self.c.execute('create table if not exists p2data (date integer, data collate binary)')
-		self.conn.commit()
+		
+		locked = True
+		while locked:
+			try:
+				##Database initialisation
+				self.c.execute('create table if not exists p2data (date integer, data collate binary)')
+				#self.conn.commit()
+				locked = False
+			except sqlite3.OperationalError:
+				locked = True
+				logger.warning("Database opening failed, database locked")
 		
 		pass
 
@@ -56,8 +66,11 @@ class P2DbStore:
 		#val = (timestamp,pickle.dumps(datas))
 		val = (timestamp,datas)
 
-		self.c.execute('insert into p2data values (?,?)', val)
-		#self.conn.commit()
+		try:
+			self.c.execute('insert into p2data values (?,?)', val)
+			#self.conn.commit()
+		except sqlite3.OperationalError:
+			logger.warning("Data lost because database was locked.")
 		
 		logger.debug('Data inserted in db')
 		logger.debug('Data stored in database')
@@ -86,20 +99,39 @@ class P2DbStore:
 			val += (dateMax,)
 		req += ' order by date'
 		
-		#SQL query execution
 		logger.debug('Executing : \''+req+'\' on database')
-		self.c.execute(req, val)
+		
+		#Getting results
+		locked = True
+		while locked:
+			try:
+				#SQL query execution
+				self.c.execute(req, val)
+				res = self.c.fetchall()
+				locked = False
+			except sqlite3.OperationalError:
+				locked = True
+				logger.warning("Database reading failed, database locked")
 		
 		#Return selected rows as an array
-		return self.c.fetchall()
+		
+		return res
 	
 	##Retrieve the oldest date in the db
 	#
 	#@return The smallest timestamp in the db
 	def getFirst(self, oldest=True):
-		req = 'SELECT * FROM p2data ORDER BY date LIMIT 1'
-		self.c.execute(req, ())
-		res = self.c.fetchone()
+		locked = True
+		while locked:
+			try:
+				req = 'SELECT * FROM p2data ORDER BY date LIMIT 1'
+				self.c.execute(req, ())
+				res = self.c.fetchone()
+				locked = False
+			except sqlite3.OperationalError:
+				locked = True
+				logger.warning("Database reading failed, database locked")
+		
 		if res != None:
 			res = res[0]
 		return res
@@ -110,9 +142,18 @@ class P2DbStore:
   #
 	#@return The bigger timestamp
 	def getLastData(self):
-		req = 'SELECT * FROM p2data ORDER BY date DESC LIMIT 1'
-		self.c.execute(req,())
-		return self.c.fetchall()
+		locked = True
+		while locked:
+			try:
+				req = 'SELECT * FROM p2data ORDER BY date DESC LIMIT 1'
+				self.c.execute(req,())
+				res =  self.c.fetchall()
+				locked = False
+			except sqlite3.OperationalError:
+				locked = True
+				logger.warning("Database reading failed, database locked")
+		
+		return res
 	
 	##P2DbStore destructor
 	def __del__(self):
