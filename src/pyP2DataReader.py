@@ -103,6 +103,7 @@ if args['database']:
 				gbuff+='set timefmt "'+inFmt+'"\n'
 				gbuff+='set format x "%H:%M:%S"\n'
 				gbuff+='set timefmt "'+inFmt+'"\n'
+				gbuff+='set ytics nomirror\n'
 				gbuff+='set y2tics nomirror\n'
 				gbuff+='set autoscale y\n'
 				gbuff+='set autoscale y2\n'
