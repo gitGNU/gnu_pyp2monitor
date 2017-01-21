@@ -103,11 +103,10 @@ if args['database']:
 				gbuff+='set timefmt "'+inFmt+'"\n'
 				gbuff+='set format x "%H:%M:%S"\n'
 				gbuff+='set timefmt "'+inFmt+'"\n'
+				gbuff+='set grid x y\n'
 				gbuff+='set ytics nomirror\n'
-				gbuff+='set y2tics nomirror\n'
 				gbuff+='set offset graph 0.001, 0.10, 0.20, 0.20\n'
 				gbuff+='set autoscale y\n'
-				gbuff+='set autoscale y2\n'
 				
 			#adding the plot command (it loads data in a file also)
 			gbuff += datas.getPlotCommand()
